@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iapps
+  labels:
+    name: iapps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: iapps
+  template:
+    metadata:
+      labels:
+        name: iapps
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: iapps
+        image: 100.2.30.190/incloudos-docker/iapps-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32607
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  iapps
+spec:
+  selector:
+    name: iapps
+  type: NodePort
+  ports:
+  - name:  iapps-port
+    port:  32607
+    targetPort:  32607
+    nodePort: 32607

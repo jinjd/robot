@@ -1,0 +1,13 @@
+# common
+dockerio/busybox:latest
+# influxdb
+dockerio/influxdb:1.7-alpine
+dockerio/appropriate/curl:latest
+# rabbitmq
+dockerio/rabbitmq:3.7-alpine
+# redis
+dockerio/redis:4.0.11-alpine
+# mariadb
+dockerio/k8s-mariadb-cluster:10.3.7
+# zookeeper
+gcrio/google_samples/k8szk:v3

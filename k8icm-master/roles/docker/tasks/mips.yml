@@ -1,0 +1,26 @@
+- name: apt更新缓存刷新
+  apt: update_cache=yes cache_valid_time=72000
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int >= 16
+
+- name: apt安装 docker
+  apt: name=docker state=latest
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int >= 16
+
+- name: yum安装 docker
+  yum: name=docker state=latest
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "RedHat") and ansible_distribution_major_version == "7"
+
+- name: docker daemon
+  template: src=daemon.json-mips.j2 dest=/etc/docker/daemon.json 
+
+- name: docker service file
+  template: src=docker.service-mips.j2 dest=/usr/lib/systemd/system/docker.service
+
+- name: 开机启用docker 服务
+  shell: systemctl enable docker
+  ignore_errors: true
+
+- name: 开启docker 服务
+  shell: systemctl daemon-reload && systemctl restart docker
+  tags: upgrade_docker
+

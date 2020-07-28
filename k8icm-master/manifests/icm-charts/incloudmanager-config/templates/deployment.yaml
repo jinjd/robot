@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "incloudmanager-config.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "incloudmanager-config.name" . }}
+    helm.sh/chart: {{ include "incloudmanager-config.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "incloudmanager-config.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "incloudmanager-config.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}/{{ .Values.image.image }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: TZ
+          value: 'Asia/Shanghai'
+        {{- if .Values.debug.enable }}
+        - name: JAVA_DEBUG
+          value: '1'
+        {{- end }}
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        ports:
+          - name: svc-port
+            containerPort: {{ .Values.service.port }}
+            protocol: TCP
+          {{- if .Values.debug.enable }}
+          - name: debug-port
+            containerPort: {{ .Values.debug.port }}
+          {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+          - name: config
+            mountPath:  /deployments/incloudos/config-file/application.yml
+            subPath: application.yml
+          - name: regions
+            mountPath: /deployments/incloudos/config-file/regions/
+          - name: regionone
+            mountPath: /deployments/incloudos/config-file/regionOne/
+      volumes:
+       - name: config
+         configMap:
+           name: icm-configmap
+           items:
+             - key: application.yml
+               path: application.yml
+       - name: regions
+         configMap:
+           name: icm-configmap-regions
+       - name: regionone
+         configMap:
+           name: icm-configmap-regionone
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+

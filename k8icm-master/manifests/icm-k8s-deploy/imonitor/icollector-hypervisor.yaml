@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icollector-hypervisor
+  labels:
+    name: icollector-hypervisor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icollector-hypervisor
+  template:
+    metadata:
+      labels:
+        name: icollector-hypervisor
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icollector
+        image: 100.2.30.190/incloudos-docker/icollector-hypervisor-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32504
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icollector-hypervisor
+spec:
+  selector:
+    name: icollector-hypervisor
+  type: NodePort
+  ports:
+  - name:  icollector-hypervisor-port
+    port:  32504
+    targetPort:  32504
+    nodePort: 32504

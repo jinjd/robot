@@ -1,0 +1,16 @@
+- name: 创建ns
+  import_tasks: ns.yml
+
+- name: tls
+  import_tasks: tls.yml
+
+- name: redis
+  import_tasks: redis.yml
+  
+- name: 部署 cmp
+  import_tasks: cmp.yml
+  when: regionName  == "regionOne"
+
+- name: 部署 region
+  import_tasks: region.yml
+  

@@ -1,0 +1,47 @@
+# 创建文件夹
+- name: node 节点创建g2相关目录
+  file: name={{ item }} state=directory
+  with_items:
+  - "{{ storage.g2.instorage_dir }}"
+  - "{{ storage.g2.instorage_dir }}/config"
+  - "{{ storage.g2.instorage_dir }}/log"
+ 
+# 放置驱动文件
+- name: 下载g2文件
+  copy: src={{ base_dir }}/bin/{{ item }} dest={{ storage.g2.instorage_dir }} mode=0755
+  with_items:
+  - instorage
+
+# 注册shadow密码
+- block:
+  - name: 注册shadow_r
+    shell: " {{ storage.g2.instorage_dir }}/instorage ext-encrypt-password {{ storage.g2.password }}"
+    register: shadow_r
+   
+  - name: 打印shadow_r
+    debug: msg="{{ shadow_r['stdout'] }}" 
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true
+
+# 放置配置文件
+- name: 配置g2 yaml文件
+  template:
+    src: "g2/instorage.yaml.j2"
+    dest: "{{ storage.g2.instorage_dir }}/config/instorage.yaml"
+
+# 创建deployment
+- block:
+    - name: 在deploy 节点创建相关目录
+      file: name={{ item }} state=directory
+      with_items:
+      - /opt/kube
+      - /opt/kube/kube-system
+      - /opt/kube/kube-system/storage
+
+    - name: 配置 instorage-provisioner-deployment yaml文件
+      template: src=g2/instorage-provisioner-deployment.yaml.j2 dest=/opt/kube/kube-system/storage/instorage-provisioner-deployment.yaml
+    
+    - name: 运行 instorage-provisioner
+      shell: "{{ bin_dir }}/kubectl apply -f /opt/kube/kube-system/storage/instorage-provisioner-deployment.yaml && sleep 5"
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true

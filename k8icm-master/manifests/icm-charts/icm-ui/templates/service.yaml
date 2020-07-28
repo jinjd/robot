@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "icm-ui.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "icm-ui.name" . }}
+    helm.sh/chart: {{ include "icm-ui.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.serviceHttp.type }}
+  # externalTrafficPolicy: Local
+  ports:
+  - port: 80
+    {{- if eq .Values.serviceHttp.type "NodePort" }}
+    nodePort: {{ .Values.serviceHttp.nodePort }}
+    {{- end }}
+    targetPort: 80
+    protocol: TCP
+    name: svc-port
+  - port: 443
+    {{- if eq .Values.serviceHttps.type "NodePort" }}
+    nodePort: {{ .Values.serviceHttps.nodePort }}
+    {{- end }}
+    targetPort: 443
+    protocol: TCP
+    name: svc-https
+
+  - port: 32266
+    {{- if eq .Values.serviceWs.type "NodePort" }}
+    nodePort: {{ .Values.serviceWs.nodePort }}
+    {{- end }}
+    targetPort: 32266
+    protocol: TCP
+    name: service-ws
+
+  selector:
+    app.kubernetes.io/name: {{ include "icm-ui.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+

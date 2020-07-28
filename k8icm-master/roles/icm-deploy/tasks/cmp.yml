@@ -1,0 +1,65 @@
+---
+# 1. incloudmanager-config
+# 2. api-gateway-regions
+# 3. itask/ibase/iauth
+# 4. icm-ui
+
+- block:
+    - name: 部署zookeeper
+      shell: helm upgrade --install zookeeper {{ mwd }}/zookeeper/ --set image.repository={{ image.repository }}/gcrio/google_samples/k8szk-{{ ARCH }},persistence.enabled={{ zk.pv }},persistence.size={{ zk.pvsize }} --namespace {{ cmp_ns }}
+      tags: icm,icks,mid
+      
+    - name: 部署rabbitmq
+      shell: helm upgrade --install rabbitmq {{ mwd }}/rabbitmq-ha/ --set image.repository={{ image.repository }}/dockerio/rabbitmq-{{ ARCH }},persistentVolume.enabled={{ rabbitmq.pv }},persistentVolume.size={{ rabbitmq.pvsize }},rabbitmqUsername={{ rabbitmq.username }},rabbitmqPassword={{ rabbitmq.password }} --namespace {{ cmp_ns }}
+      tags: icm,icks,mid
+   
+    - name: 部署galera
+      shell: kubectl apply -f  {{ mwd }}/mariadb-cluster-new/template --namespace {{ cmp_ns }} --record
+      tags: icm,icks,mid
+
+    - name: galera pod 是否准备就绪
+      shell: kubectl get pod -n {{ cmp_ns }}|grep mysql|awk '{print $2}'|grep '1/'|wc -l
+      register: mariadb_ready
+      until: mariadb_ready.stdout == "3"
+      retries: 60
+      tags: icm,icks,mid,galera-k8s
+
+    # - name: 创建数据用户
+    #   shell: 
+
+    - name: 创建cmp所需的数据库
+      shell: kubectl exec -it -n {{ cmp_ns }}  mysql-0  -- mysql -u{{ db.username }} -p{{ db.password }} -h{{ MASTER_IP }} -P{{ db.nodeport }} -e'create database IF NOT EXISTS {{ item }} default character set utf8 default collate utf8_bin'
+      with_items:
+        ibase
+
+      tags: icm,icks,mid
+      
+#################################################################################################################
+    - name: incloudmanager-config
+      shell: helm upgrade --install incloudmanager-config {{ icmd }}/incloudmanager-config/ --set replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},service.type={{ service.type }},db.service={{ db.service }},db.port={{ db.port }},db.username={{ db.username }},db.password={{ db.password }},zk.service={{ zk.service }},zk.port={{ zk.port }},rabbitmq.service={{ rabbitmq.service }},rabbitmq.port={{ rabbitmq.port }},rabbitmq.username={{ rabbitmq.username }},rabbitmq.password={{ rabbitmq.password }},redis.service={{ redis.service }},redis.port={{ redis.port }},redis.password={{ redis.password }},influxdb.service={{ influxdb.service }},influxdb.port={{ influxdb.port }},influxdb.username={{ influxdb.username }},influxdb.password={{ influxdb.password }} --namespace {{ cmp_ns }}
+      tags: icm,icks,cmp,incloudmanager-config
+    # api gateway
+    - name: incloudmanager-api-gateway-regions
+      shell: helm upgrade --install incloudmanager-api-gateway-regions {{ icmd }}/incloudmanager-api-gateway/ --set replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,icks,cmp,incloudmanager-api-gateway-regions
+
+    - name: itask
+      shell: helm upgrade --install itask {{ icmd }}/itask/ --set replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},manifests.job_db_init={{ manifests.job_db_init }},image.pullPolicy={{ image.pullPolicy }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,icks,cmp,itask
+
+    - name: iauth
+      shell: helm upgrade --install iauth {{ icmd }}/ibase/iauth/ --set replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,icks,cmp,iauth
+
+    - name: ibase
+      shell: helm upgrade --install ibase {{ icmd }}/ibase/ibase/ --set mac={{ ansible_default_ipv4.macaddress }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},imagePluginIcm.tag={{ image.pluginIcmTag }},manifests.job_db_init={{ manifests.job_db_init }},image.pullPolicy={{ image.pullPolicy }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,icks,cmp,ibase
+
+    - name: icm-ui
+      shell: helm upgrade --install icm-ui {{ icmd }}/icm-ui/ --set replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},db.service={{ db.service }},db.port={{ db.port }},db.username={{ db.username }},db.password={{ db.password }},redis.service={{ redis.service }},redis.port={{ redis.port }},redis.password={{ redis.password }} --namespace {{ cmp_ns }}
+      tags: icm,icks,cmp,icm-ui
+
+#################################################################################################################
+
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true

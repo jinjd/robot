@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icollector-container
+  labels:
+    name: icollector-container
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icollector-container
+  template:
+    metadata:
+      labels:
+        name: icollector-container
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icollector
+        image: 100.2.30.190/incloudos-docker/icollector-container-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32506
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icollector-container
+spec:
+  selector:
+    name: icollector-container
+  type: NodePort
+  ports:
+  - name:  icollector-container-port
+    port:  32506
+    targetPort:  32506
+    nodePort: 32506

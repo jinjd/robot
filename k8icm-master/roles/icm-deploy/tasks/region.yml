@@ -1,0 +1,149 @@
+---
+
+- block:
+    # - name: 部署redis
+    #   shell: helm upgrade --install redis {{ mwd }}/redis-ha/ --set image.repository="{{ image.repository }}/dockerio/redis-{{ ARCH }}",persistence.enabled={{ redis.pv }},persistence.size={{ redis.pvsize }},redisPassword={{ redis.password }} --namespace {{ cmp_ns }}
+    #   tags: icm,icks,mid
+      
+    - name: 部署influxdb
+      shell: helm upgrade --install influxdb {{ mwd }}/influxdb/ --set image.repo="{{ image.repository }}/dockerio/influxdb-{{ ARCH }}",setDefaultUser.image="{{ image.repository }}/dockerio/appropriate/curl-{{ ARCH }}",persistence.enabled={{ influxdb.pv }},persistence.size={{ influxdb.pvsize }},user.username={{ influxdb.username }},user.password={{ influxdb.password }} --namespace {{ cmp_ns }}
+      tags: icm,icks,mid  
+
+    - name: 部署galera
+      shell: kubectl apply -f  {{ mwd }}/mariadb-cluster-new/template --namespace {{ cmp_ns }} --record
+      tags: icm,icks,mid,,galera-k8s
+
+    - name: galera pod 是否准备就绪
+      shell: kubectl get pod -n {{ cmp_ns }}|grep mysql|awk '{print $2}'|grep '1/'|wc -l
+      register: mariadb_ready
+      until: mariadb_ready.stdout == "3"
+      retries: 30
+      tags: icm,icks,mid
+
+    - name: 创建region所需的数据库
+      shell: kubectl exec -it -n {{ cmp_ns }}  mysql-0  -- mysql -u{{ db.username }} -p{{ db.password }} -h{{ MASTER_IP }} -P{{ db.nodeport }} -e'create database IF NOT EXISTS {{ item }} default character set utf8 default collate utf8_bin'
+
+      with_items:
+        - iapps
+        - icharge
+        - ilifecycle
+        - imonitor
+        - ipaas
+        - iphymachine
+        - ireport
+        - iresource
+        - iworkflow
+
+#################################################################################################################
+    # api gateway
+    - name: incloudmanager-api-gateway-{{ regionName | lower }}
+      shell: helm upgrade --install incloudmanager-api-gateway-{{ regionName | lower }} {{ icmd }}/incloudmanager-api-gateway/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},incloudConfigLabel.regionName={{ regionName }},service.type={{ service.type }},service.nodePort="30080",service.port="7980" --namespace {{ cmp_ns }}
+      tags: icm,icks,incloudmanager-api-gateway-{{ regionName | lower }}
+ 
+    - name: icharge
+      shell: helm upgrade --install icharge {{ icmd }}/icharge/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,region,icharge
+      when: "env == 'icm'"
+
+    - name: ilifecycle
+      shell: helm upgrade --install ilifecycle {{ icmd }}/ilifecycle/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,icks,region,ilifecycle
+
+    - name: icinder
+      shell: helm upgrade --install {{ item }} {{ icmd }}/icinder/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - icinder-common
+        - icinder-hypervisor
+        - icinder-openstack
+      tags: icm,region,icinder
+      when: "env == 'icm'"
+
+    - name: icompute
+      shell: helm upgrade --install {{ item }} {{ icmd }}/icompute/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - icompute-common
+        - icompute-hypervisor
+        - icompute-openstack
+      tags: icm,region,icompute
+      when: "env == 'icm'"
+
+    - name: imanila
+      shell: helm upgrade --install imanila {{ icmd }}/imanila/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,region,imanila
+      when: "env == 'icm'"
+
+    - name: imirror
+      shell: helm upgrade --install {{ item }} {{ icmd }}/imirror/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - imirror-hypervisor
+        - imirror-openstack
+      tags: icm,region,imirror
+      when: "env == 'icm'"
+
+    - name: imonitor
+      shell: helm upgrade --install {{ item }} {{ icmd }}/imonitor/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - imonitor
+        - ialert
+        - icollector-container
+        - icollector-hypervisor
+        - icollector-openstack
+      tags: icm,region,imonitor
+      when: "env == 'icm'"
+
+    - name: imonitor
+      shell: helm upgrade --install {{ item }} {{ icmd }}/imonitor/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - imonitor
+        - ialert
+        - icollector-container
+      tags: icks,region,imonitor
+      when: "env == 'icks'"
+
+    - name: inetwork
+      shell: helm upgrade --install {{ item }} {{ icmd }}/inetwork/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - inetwork-core
+        - inetwork-l3
+        - inetwork-advance
+      tags: icm,region,inetwork
+      when: "env == 'icm'"
+
+    - name: ipaas
+      shell: helm upgrade --install {{ item }} {{ icmd }}/ipaas/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - iapps
+        - ipaas
+      tags: icm,icks,region,ipaas
+
+    - name: iphymachine
+      shell: helm upgrade --install iphymachine {{ icmd }}/iphymachine/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,region,iphymachine
+      when: "env == 'icm'"
+
+    - name: ireport
+      shell: helm upgrade --install ireport {{ icmd }}/ireport/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,region,ireport
+      when: "env == 'icm'"
+
+    - name: istorage
+      shell: helm upgrade --install {{ item }} {{ icmd }}/istorage/{{ item }} --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      with_items:
+        - istorage-hypervisor
+        - istorage-openstack
+      tags: icm,region,istorage
+      when: "env == 'icm'"
+
+    - name: iswift
+      shell: helm upgrade --install iswift {{ icmd }}/iswift/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,region,iswift
+      when: "env == 'icm'"
+
+    - name: iworkflow
+      shell: helm upgrade --install iworkflow {{ icmd }}/iworkflow/ --set incloudConfigURL.url={{ incloudConfigURL.url }},replicaCount={{ replicaCount }},image.repository={{ image.repository }},image.tag={{ image.tag }},image.pullPolicy={{ image.pullPolicy }},incloudConfigLabel.regionName={{ regionName }},manifests.job_db_init={{ manifests.job_db_init }},service.type={{ service.type }} --namespace {{ cmp_ns }}
+      tags: icm,icks,region,iworkflow
+
+#################################################################################################################
+
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true

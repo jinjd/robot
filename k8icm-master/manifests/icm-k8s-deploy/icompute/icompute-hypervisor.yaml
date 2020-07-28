@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icompute-hypervisor
+  labels:
+    name: icompute-hypervisor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icompute-hypervisor
+
+  template:
+    metadata:
+      labels:
+        name: icompute-hypervisor
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icompute-hypervisor
+        image: 100.2.30.190/incloudos-docker/icompute-hypervisor-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32201
+            name: icompute-h-p
+          # - containerPort: 32266
+          #   name: icompute-h-ws
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: icompute-hypervisor
+spec:
+  selector:
+    name: icompute-hypervisor
+  type: NodePort
+  ports:
+  - name: icompute-h-p
+    port:  32201
+    targetPort:  32201
+    nodePort: 32201
+  # - name: icompute-h-ws
+  #   port:  32266
+  #   targetPort:  32266
+  #   nodePort: 32266

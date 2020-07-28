@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icinder-common
+  labels:
+    name: icinder-common
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icinder-common
+  template:
+    metadata:
+      labels:
+        name: icinder-common
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icinder
+        image: 100.2.30.190/incloudos-docker/icinder-common-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32411
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icinder-common
+spec:
+  selector:
+    name: icinder-common
+  type: NodePort
+  ports:
+  - name:  icinder-common-port
+    port:  32411
+    targetPort:  32411
+    nodePort: 32411

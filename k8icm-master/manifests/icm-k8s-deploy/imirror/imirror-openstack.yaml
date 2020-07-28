@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imirror-openstack
+  labels:
+    name: imirror-openstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: imirror-openstack
+  template:
+    metadata:
+      labels:
+        name: imirror-openstack
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: imirror
+        image: 100.2.30.190/incloudos-docker/imirror-openstack-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32422
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  imirror-openstack
+spec:
+  selector:
+    name: imirror-openstack
+  type: NodePort
+  ports:
+  - name:  imirror-openstack-port
+    port:  32422
+    targetPort:  32422
+    nodePort: 32422

@@ -1,0 +1,11 @@
+# to set up 'kube-node' nodes
+- hosts: kube-node
+  roles:
+  - kube-node
+
+  tasks:
+  - name: Making  nodes SchedulingEnabled
+    shell: "{{ bin_dir }}/kubectl uncordon {{ inventory_hostname }} "
+    delegate_to: "{{ groups.deploy[0] }}"
+    when: DEPLOY_MODE != "allinone"
+    ignore_errors: true

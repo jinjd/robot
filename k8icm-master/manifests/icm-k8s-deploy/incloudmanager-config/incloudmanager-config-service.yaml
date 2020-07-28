@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incloudmanager-config
+  labels:
+    name: incloudmanager-config
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: incloudmanager-config
+  template:
+    metadata:
+      labels:
+        name: incloudmanager-config
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        name: incloudmanager-config
+        image: 100.2.30.190/incloudos-docker/incloudmanager-config:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32001
+
+        # 健康检查
+        livenessProbe:
+          failureThreshold: 3
+          tcpSocket:
+            port: 32001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 60
+        readinessProbe:
+          failureThreshold: 3
+          tcpSocket:
+            port: 32001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 60
+
+        volumeMounts:
+          - name: config
+            mountPath:  /deployments/incloudos/config-file/application.yml
+            subPath: application.yml
+          - name: regions
+            mountPath: /deployments/incloudos/config-file/regions/
+          - name: regionone
+            mountPath: /deployments/incloudos/config-file/regionOne/
+          - name: regiontwo
+            mountPath: /deployments/incloudos/config-file/regionTwo/
+      volumes:
+       - name: config
+         configMap:
+           name: icm-configmap
+           items:
+             - key: application.yml
+               path: application.yml
+       - name: regions
+         configMap:
+           name: icm-configmap-regions
+       - name: regionone
+         configMap:
+           name: icm-configmap-regionone
+       - name: regiontwo
+         configMap:
+           name: icm-configmap-regiontwo
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  incloudmanager-config
+spec:
+  selector:
+    name: incloudmanager-config
+  type: NodePort
+  ports:
+  - name:  incloudmanager-config-port
+    port:  32001
+    targetPort:  32001
+    nodePort: 32001

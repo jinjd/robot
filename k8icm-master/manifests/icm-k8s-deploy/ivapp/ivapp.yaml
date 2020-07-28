@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ivapp
+  labels:
+    name: ivapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ivapp
+  template:
+    metadata:
+      labels:
+        name: ivapp
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: ivapp
+        image: 100.2.30.190/incloudos-docker/ivapp-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32608
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ivapp
+spec:
+  selector:
+    name: ivapp
+  type: NodePort
+  ports:
+  - name: ivapp-port
+    port:  32608
+    targetPort:  32608
+    nodePort: 32608

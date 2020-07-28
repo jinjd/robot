@@ -1,0 +1,66 @@
+# Default values for incloudmanager-config.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 3
+
+image:
+  repository: harbor.inspur.com
+  image: incloudos-docker/incloudmanager-config
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 32001
+  nodePort: 32001
+resources: {}
+  # limits:
+  #  cpu: 2
+  #  memory: 4Gi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+# 中间件服务
+db:
+  service: galera
+  port: 3306
+  username: root
+  password: "123456a?"
+zk:
+  service: zookeeper
+  port: 2181
+rabbitmq:
+  service: rabbitmq-rabbitmq-ha
+  port: 5672
+  username: "incloudmanager"
+  password: "incloudmanager123456a?"
+redis:
+  service: redis-redis-ha
+  port: 6379
+  password: 
+influxdb:
+  service: influxdb-influxdb
+  port: 8086
+  username: "admin"
+  password: "123456a?"
+  database: inspur
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+manifests:
+  job_db_init: true
+
+debug:
+  enable: false
+  type: NodePort
+  port: 5005
+  nodePort: 30086

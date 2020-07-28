@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inetwork-core
+  labels:
+    name: inetwork-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: inetwork-core
+  template:
+    metadata:
+      labels:
+        name: inetwork-core
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: inetwork-core
+        image: 100.2.30.190/incloudos-docker/inetwork-core-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32306
+
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  inetwork-core
+spec:
+  selector:
+    name: inetwork-core
+  type: NodePort
+  ports:
+  - name:  inetwork-core-port
+    port:  32306
+    targetPort:  32306
+    nodePort: 32306

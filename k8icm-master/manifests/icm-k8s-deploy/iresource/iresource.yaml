@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iresource
+  labels:
+    name: iresource
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: iresource
+  template:
+    metadata:
+      labels:
+        name: iresource
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: iresource
+        image: 100.2.30.190/incloudos-docker/iresource-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32161
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  iresource
+spec:
+  selector:
+    name: iresource
+  type: NodePort
+  ports:
+  - name:  iresource-port
+    port:  32161
+    targetPort:  32161
+    nodePort: 32161

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app_name }}
+  labels:
+    name: k8s-{{ app_name }}
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: {{ app_name }}
+
+  template:
+    metadata:
+      labels:
+        name: {{ app_name }}
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+
+        name: {{ app_name }}
+        image: {{ registry }}/incloudos-docker/{{ image_name }}:{{ image_tag }}
+        ports:
+          - containerPort: {{ app_port }}
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  {{ app_name }}
+spec:
+  selector:
+    name: {{ app_name }}
+# 修改为ClusterIP
+  type: ClusterIP
+#  type: NodePort
+  ports:
+  - name:  {{ app_name }}-port
+    port:  {{ app_port }}
+    targetPort:  {{ app_port }}
+#    nodePort: {{ app_port }}

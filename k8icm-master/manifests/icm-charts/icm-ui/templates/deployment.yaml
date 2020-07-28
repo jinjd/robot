@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "icm-ui.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "icm-ui.name" . }}
+    helm.sh/chart: {{ include "icm-ui.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "icm-ui.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "icm-ui.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}/{{ .Values.image.image }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: TZ
+          value: 'Asia/Shanghai'
+        ports:
+          - name: svc-port
+            containerPort: 80
+            protocol: TCP
+          - name: svc-https
+            containerPort: 443
+            protocol: TCP
+          - name: service-ws
+            containerPort: 32266
+            protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+              initialDelaySeconds: 30
+              periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+              initialDelaySeconds: 30
+              periodSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+
+        volumeMounts:
+          - name: config
+            mountPath:  /usr/local/inspurnode/icos/server/resources/default/serviceAddr.json
+            subPath: serviceAddr.json
+
+      volumes:
+       - name: config
+         configMap:
+           name: icm-ui-configmap
+           items:
+             - key: serviceAddr.json
+               path: serviceAddr.json
+
+    {{- with .Values.nodeSelector }}
+    nodeSelector:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+  {{- with .Values.affinity }}
+    affinity:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+    tolerations:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}

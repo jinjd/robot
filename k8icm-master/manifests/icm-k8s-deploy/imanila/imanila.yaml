@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imanila
+  labels:
+    name: imanila
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: imanila
+  template:
+    metadata:
+      labels:
+        name: imanila
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: imanila
+        image: 100.2.30.190/incloudos-docker/imanila-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32404
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  imanila
+spec:
+  selector:
+    name: imanila
+  type: NodePort
+  ports:
+  - name:  imanila-port
+    port:  32404
+    targetPort:  32404
+    nodePort: 32404

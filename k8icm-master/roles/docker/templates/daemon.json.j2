@@ -1,0 +1,12 @@
+{
+  "insecure-registries": ["0.0.0.0/0"],
+  "registry-mirrors": ["{{ REAL_REG_MIRROR_1 }}"],
+  "max-concurrent-downloads": 10,
+  "log-driver": "{{ LOG_DRIVER }}",
+  "log-level": "{{ LOG_LEVEL }}",
+  "log-opts": {
+    "max-size": "{{ LOG_MAX_SIZE }}",
+    "max-file": "{{ LOG_MAX_FILE }}"
+    },
+  "data-root": "{{ STORAGE_DIR }}"
+}

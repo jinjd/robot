@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipaas
+  labels:
+    name: ipaas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ipaas
+  template:
+    metadata:
+      labels:
+        name: ipaas
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: ipaas
+        image: 100.2.30.190/incloudos-docker/ipaas-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32606
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  ipaas
+spec:
+  selector:
+    name: ipaas
+  type: NodePort
+  ports:
+  - name:  ipaas-port
+    port:  32606
+    targetPort:  32606
+    nodePort: 32606

@@ -1,0 +1,76 @@
+---
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: instorage-k8s-provisioner
+  namespace: kube-system
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: instorage-k8s-provisioner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: instorage-k8s-provisioner
+  namespace: kube-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inspur-instorage-01
+  namespace: kube-system
+data:
+  instorage.yaml: |
+    log:
+      enabled: true
+      logdir: log
+      level: 4
+    host:
+      link: fc
+    storage:
+      - name: storage-01
+        host: {{ storage.g2.host }}:{{ storage.g2.port }}
+        username: {{ storage.g2.username }}
+        password:
+        shadow: {{ shadow_r['stdout'] }}
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: instorage-provisioner
+  namespace: kube-system
+  labels:
+    app: instorage-provisioner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: instorage-provisioner
+  template:
+    metadata:
+      name: instorage-provisioner
+      labels:
+        app: instorage-provisioner
+    spec:
+      serviceAccountName: instorage-k8s-provisioner
+      containers:
+      - name: instorage-provisioner
+        image: {{ instorage_k8s_provisioner_image }}
+        volumeMounts:
+         - name: config
+           mountPath: /opt/inspur-instorage-provisioner/configmap
+      volumes:
+      - name: config
+        configMap:
+          name: inspur-instorage-01
+
+

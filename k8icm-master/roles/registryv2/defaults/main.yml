@@ -1,0 +1,9 @@
+
+registryv2_image: "registry-{{ ARCH }}"
+
+# 离线镜像tar包
+registryv2_offline: "registry_{{ ARCH }}.tar"
+
+registryv2_name: "icm-registryv2"
+
+registryv2_port: "5000"

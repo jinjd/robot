@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: icm-configmap-regions
+data:
+  application.yml: |
+    incloud:
+      common:
+        db:
+          url: galera:3306
+          username: root
+          password: 123456a?
+        zk:
+          url: zookeeper-zookeeper:2181
+        rabbitmq:
+          host: rabbitmq-rabbitmq-ha
+          port: 5672
+          username: guest
+          password: 5mZDWTJc9sOnGYekLJIs9B5l
+    incloud-region:
+      regions:
+        regionOne:
+          url: http://incloudmanager-api-gateway-regionOne:7980
+  iauth-service.yml: |-
+    incloud:
+      iauth:
+        db:
+          url: ${incloud.common.db.url}/ibase
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+  ibase-service.yml: |
+    incloud:
+      ibase:
+        db:
+          url: ${incloud.common.db.url}/ibase
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+  	      host: ${incloud.common.rabbitmq.host}
+  	      port: ${incloud.common.rabbitmq.port}
+  	      username: ${incloud.common.rabbitmq.username}
+  	      password: ${incloud.common.rabbitmq.password}
+  itask-service.yml: |
+    incloud:
+      itask:
+        db:
+          url: ${incloud.common.db.url}/ibase
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}

@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: influxdb-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+      - name: influxdb
+        image: registryv2.inspur.com:5000/influxdb:mips-2019031413
+#        command: ["bash", "-c", "python ./influxdb_test.py"]
+        imagePullPolicy: Always

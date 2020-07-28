@@ -1,0 +1,72 @@
+#----------------- ICM Deployment ----------------#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  icm
+  labels:
+    name: icm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icm
+  template:
+    metadata:
+      labels:
+        name: icm
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        name: icm
+        image: 100.2.30.190/incloudos-docker/icm-service:{{ IMAGE_TAG }}
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        - containerPort: 32266
+
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 500m
+            memory: 500Mi
+
+        volumeMounts:
+          - name: config
+            mountPath:  /usr/local/inspurnode/icos/server/resources/default/serviceAddr.json
+            subPath: serviceAddr.json
+      volumes:
+       - name: config
+         configMap:
+           name: icm-ui-configmap
+           items:
+             - key: serviceAddr.json
+               path: serviceAddr.json
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: icm
+spec:
+  selector:
+    name: icm
+  # externalTrafficPolicy: Local
+  type: NodePort
+  ports:
+  - name: icm-http-port
+    port: 80
+    targetPort: 80
+    nodePort: 30480
+  - name: icm-https-port
+    port: 443
+    targetPort: 443
+    nodePort: 30443
+  - name: ws
+    nodePort: 32266
+    port: 32266
+    targetPort: 32266

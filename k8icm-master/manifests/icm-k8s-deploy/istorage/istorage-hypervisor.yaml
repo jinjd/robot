@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istorage-hypervisor
+  labels:
+    name: istorage-hypervisor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: istorage-hypervisor
+
+  template:
+    metadata:
+      labels:
+        name: istorage-hypervisor
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: istorage-hypervisor
+        image: 100.2.30.190/incloudos-docker/istorage-hypervisor-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32401
+
+        securityContext:
+          privileged: true
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  istorage-hypervisor
+spec:
+  selector:
+    name: istorage-hypervisor
+  type: NodePort
+  ports:
+  - name:  istorage-hypervisor-port
+    port:  32401
+    targetPort:  32401
+    nodePort: 32401

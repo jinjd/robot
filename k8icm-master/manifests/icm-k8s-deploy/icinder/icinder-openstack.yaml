@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icinder-openstack
+  labels:
+    name: icinder-openstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icinder-openstack
+  template:
+    metadata:
+      labels:
+        name: icinder-openstack
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icinder
+        image: 100.2.30.190/incloudos-docker/icinder-openstack-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32413
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icinder-openstack
+spec:
+  selector:
+    name: icinder-openstack
+  type: NodePort
+  ports:
+  - name:  icinder-openstack-port
+    port:  32413
+    targetPort:  32413
+    nodePort: 32413

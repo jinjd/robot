@@ -1,0 +1,37 @@
+# icm-service
+
+# ialert-service
+# iauth-service
+# iapps-service
+ibase-service
+
+# icompute-openstack-service
+# icompute-common-service
+# icompute-hypervisor-service
+
+# icinder-hypervisor-service
+# icinder-openstack-service
+
+# icollector-hypervisor-service
+# icollector-openstack-service
+# icinder-common-service
+# icharge-service
+# inetwork-l3-service
+# icompute-vm-service
+# incloudmanager-api-gateway
+# imanila-service
+# inetwork-core-service
+# ireport-service
+# imirror-hypervisor-service
+# ilifecycle-service
+# ipaas-service
+# inetwork-advance-service
+# iphymachine-service
+# imonitor-service
+# incloudmanager-config
+# imirror-openstack-service
+# iswift-service
+# itask-service
+# istorage-openstack-service
+# istorage-hypervisor-service
+# iworkflow-service

@@ -1,0 +1,53 @@
+# Default values for ibase.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 3
+
+image:
+  repository: harbor.inspur.com
+  image: incloudos-docker/ibase-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePluginIcm:
+  repository: harbor.inspur.com
+  image: incloudos-docker/ibase-plugin-icm
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 32101
+  nodePort: 32101
+resources: {}
+  # limits:
+  #  cpu: 2
+  #  memory: 4Gi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+incloudConfigURL: 
+  url: incloudmanager-config
+  port: 32001
+
+mac: "00:00:00:00:00:00"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+manifests:
+  job_db_init: true
+
+debug:
+  enable: false
+  type: NodePort 
+  port: 5005
+  nodePort: 32121

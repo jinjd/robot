@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incloudmanager-config
+  labels:
+    name: incloudmanager-config
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: incloudmanager-config
+  template:
+    metadata:
+      labels:
+        name: incloudmanager-config
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        name: incloudmanager-config
+        image: 100.2.30.190/incloudos-docker/incloudmanager-config
+        ports:
+          - containerPort: 32001
+        resources:
+          limits:
+            cpu: 4
+            memory: 8Gi
+          requests:
+            cpu: 1
+            memory: 2Gi
+        # 健康检查
+        livenessProbe:
+          failureThreshold: 3
+          tcpSocket:
+            port: 32001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 60
+        readinessProbe:
+          failureThreshold: 3
+          tcpSocket:
+            port: 32001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 60
+
+        volumeMounts:
+          - name: config
+            mountPath: /deployments/incloudos/config-file/
+      volumes:
+        - name: config
+          configMap:
+            name: icm-configmap
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  incloudmanager-config
+spec:
+  selector:
+    name: incloudmanager-config
+  type: NodePort
+  ports:
+  - name:  incloudmanager-config-port
+    port:  32001
+    targetPort:  32001
+    nodePort: 32001

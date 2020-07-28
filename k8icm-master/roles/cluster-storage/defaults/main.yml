@@ -1,0 +1,42 @@
+#image: quay.io/external_storage/nfs-client-provisioner:latest
+nfs_external_storage_image: "{{ REG_MIRROR }}quayio/external_storage/nfs-client-provisioner-{{ ARCH }}"
+nfs_external_storage_offline: "nfs-client-provisioner.tar"
+# g2
+instorage_k8s_provisioner_image: "{{ REG_MIRROR }}/inspur/instorage-k8s-provisioner-{{ ARCH }}"
+# 动态存储类型, 目前支持自建nfs和aliyun_nas
+storage:
+  # nfs server 参数
+  nfs:
+    
+    enabled: "yes"
+    server_enabled: "yes"
+
+    # 如果有外部的nfs server准备部署，可以将这里修改为目标机器的ip
+    # server: "100.2.12.180"
+    server: "{{ groups.deploy[0] }}"
+    server_path: "/data/nfs"
+    export_config: "k8s"
+    options: "*(rw,no_root_squash,no_wdelay)"
+    storage_class: "nfs-dynamic-class"
+    provisioner_name: "nfs-provisioner-01"
+
+  # aliyun_nas 参数
+  aliyun_nas:
+    enabled: "no"
+    server: "xxxxxxxxxxx.cn-hangzhou.nas.aliyuncs.com"
+    server_path: "/"
+    storage_class: "class-aliyun-nas-01"
+    controller_name: "aliyun-nas-controller-01"
+  
+  # 待添加ceph
+  rbd:
+    enable: "no"
+
+  # G2
+  g2:
+    enabled: "no"
+    instorage_dir: "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/inspur~instorage"
+    host: "100.2.86.247"
+    port: "22"
+    username: "superuser"
+    password: "Passw0rd!"

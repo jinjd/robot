@@ -1,0 +1,44 @@
+# Default values for incloudmanager-api-gateway-regions.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 3
+
+image:
+  repository: harbor.inspur.com
+  image: incloudos-docker/incloudmanager-api-gateway
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port:  7979
+  targetPort:  7979
+  nodePort: 30079
+resources: {}
+  # limits:
+  #  cpu: 2
+  #  memory: 4Gi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+incloudConfigURL: 
+  url: incloudmanager-config
+  port: 32001
+incloudConfigLabel:
+  regionName: regions
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+debug:
+  enable: false
+  type: NodePort 
+  port: 5005
+  nodePort: 30099

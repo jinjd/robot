@@ -1,0 +1,534 @@
+# region One configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: icm-configmap-regionone
+data:
+  application.yml: |
+    incloud:
+      common:
+        db:
+          url: {{ .Values.db.service }}:{{ .Values.db.port }}
+          username: {{ .Values.db.username }}
+          password: {{ .Values.db.password }}
+        zk:
+          url: {{ .Values.zk.service }}:{{ .Values.zk.port }}
+        rabbitmq:
+          host: {{ .Values.rabbitmq.service }}
+          port: {{ .Values.rabbitmq.port }}
+          username: {{ .Values.rabbitmq.username }}
+          password: {{ .Values.rabbitmq.password }}
+        redis:
+          database: 0
+          host: {{ .Values.redis.service }}
+          port: {{ .Values.redis.port }}
+          password: {{ .Values.redis.password }}
+          timeout: 6000
+    incloud-region:
+      regionid: regionOne
+    incloud-service:
+      endpoints:
+        icompute-hypervisor:
+          enabled: true
+          path: /icompute-hypervisor/**
+          url: http://icompute-hypervisor:32201
+          stripPrefix: true
+        icompute-openstack:
+          enabled: true
+          path: /icompute-openstack/**
+          url: http://icompute-openstack:32202
+          stripPrefix: true
+        icompute-common:
+          enabled: true
+          path: /icompute-common/**
+          url: http://icompute-common:32203
+          stripPrefix: true
+        icharge:
+          enabled: true
+          path: /icharge/**
+          url: http://icharge:32601
+          stripPrefix: true
+        iworkflow:
+          enabled: true
+          path: /iworkflow/**
+          url: http://iworkflow:32602
+          stripPrefix: true
+        ireport:
+          enabled: true
+          path: /ireport/**
+          url: http://ireport:32603
+          stripPrefix: true
+        inetwork-core:
+          enabled: true
+          path: /inetwork-core/**
+          url: http://inetwork-core:32306
+          stripPrefix: true
+        inetwork-l3:
+          enabled: true
+          path: /inetwork-l3/**
+          url: http://inetwork-l3:32307
+          stripPrefix: true
+        inetwork-advance:
+          enabled: true
+          path: /inetwork-advance/**
+          url: http://inetwork-advance:32308
+          stripPrefix: true
+        imonitor:
+          enabled: true
+          path: /imonitor/**
+          url: http://imonitor:32501
+          stripPrefix: true
+        istorage-hypervisor:
+          enabled: true
+          path: /istorage-hypervisor/**
+          url: http://istorage-hypervisor:32401
+          stripPrefix: true
+        istorage-openstack:
+          enabled: true
+          path: /istorage-openstack/**
+          url: http://istorage-openstack:32402
+          stripPrefix: true
+        icinder-common:
+          enabled: true
+          path: /icinder-common/**
+          url: http://icinder-common:32411
+          stripPrefix: true
+        icinder-hypervisor:
+          enabled: true
+          path: /icinder-hypervisor/**
+          url: http://icinder-hypervisor:32412
+          stripPrefix: true
+        icinder-openstack:
+          enabled: true
+          path: /icinder-openstack/**
+          url: http://icinder-openstack:32413
+          stripPrefix: true
+        imirror-hypervisor:
+          enabled: true
+          path: /imirror-hypervisor/**
+          url: http://imirror-hypervisor:32421
+          stripPrefix: true
+        imirror-openstack:
+          enabled: true
+          path: /imirror-openstack/**
+          url: http://imirror-openstack:32422
+          stripPrefix: true
+        imanila:
+          enabled: true
+          path: /imanila/**
+          url: http://imanila:32404
+          stripPrefix: true
+        iswift:
+          enabled: true
+          path: /iswift/**
+          url: http://iswift:32405
+          stripPrefix: true
+        ilifecycle:
+          enabled: true
+          path: /ilifecycle/**
+          url: http://ilifecycle:32406
+          stripPrefix: true
+        iphymachine:
+          enabled: true
+          path: /iphymachine/**
+          url: http://iphymachine:32900
+          stripPrefix: true
+        icollector-hypervisor:
+          enabled: true
+          path: /icollector/**
+          url: http://icollector-hypervisor:32504
+          stripPrefix: true
+        icollector-openstack:
+          enabled: true
+          path: /icollector/**
+          url: http://icollector-openstack:32505
+          stripPrefix: true
+        icollector-container:
+          enabled: true
+          path: /icollector/**
+          url: http://icollector-container:32506
+          stripPrefix: true
+        ialert:
+          enabled: true
+          url: http://ialert:32503
+          stripPrefix: true
+        ipaas:
+          enabled: true
+          path: /ipaas/**
+          url: http://ipaas:32606
+          stripPrefix: true
+        iapps:
+          enabled: true
+          path: /iapps/**
+          url: http://iapps:32607
+          stripPrefix: true
+        ihybrid:
+          enabled: true
+          path: /ihybrid/**
+          url: http://ihybrid:32160
+          stripPrefix: true
+        ivapp:
+          enabled: true
+          path: /ivapp/**
+          url: http://ivapp:32608
+          stripPrefix: true
+        itrouble:
+          enabled: true
+          path: /itrouble/**
+          url: http://itrouble:32609
+          stripPrefix: true
+        iresource-common:
+          enabled: true
+          path: /iresource-common/**
+          url: http://iresource-common:32170
+          stripPrefix: true
+  iapps-service.yml: |-
+    incloud:
+      iapps:
+        db:
+          url: ${incloud.common.db.url}/iapps
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        helm:
+          path: /root/charts-repo
+          userName: root
+          password: inspur
+          repoUrl: http://100.2.28.131:8879
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  icharge-service.yml: |-
+    incloud:
+      icharge:
+        db:
+          url: ${incloud.common.db.url}/icharge
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  icinder-service.yml: |-
+    incloud:
+      icinder:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  icompute-service.yml: |
+    incloud:
+      icompute:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  ihybrid-service.yml: |-
+    incloud:
+      ihybrid:
+        db:
+          url: ${incloud.common.db.url}/ihybrid
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+  ilifecycle-service.yml: |-
+    incloud:
+      ilifecycle:
+        db:
+          url: ${incloud.common.db.url}/ilifecycle
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  imanila-service.yml: |-
+    incloud:
+      imanila:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  imirror-service.yml: |-
+    incloud:
+      imirror:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  imonitor-service.yml: |-
+    incloud:
+      imonitor:
+        db:
+          url: ${incloud.common.db.url}/imonitor
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+        influxdb:
+          url: http://{{ .Values.influxdb.service }}:{{ .Values.influxdb.port }}
+          username: {{ .Values.influxdb.username }}
+          password: {{ .Values.influxdb.password }}
+          database: {{ .Values.influxdb.database }}
+        quartz:
+          poolsize:
+            icollector-hypervisor-service: 1000
+            icollector-openstack-service: 1000
+            icollector-container-service: 1000
+  inetwork-service.yml: |-
+    incloud:
+      inetwork:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  ipaas-service.yml: |
+    incloud:
+      ipaas:
+        db:
+          url: ${incloud.common.db.url}/ipaas
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+        systemNameSpace: kube-system,monitoring,ingress-nginx
+  iphymachine-service.yml: |
+    incloud:
+      iphymachine:
+        db:
+          url: ${incloud.common.db.url}/iphymachine
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  ireport-service.yml: |-
+    incloud:
+      ireport:
+        db:
+          url: ${incloud.common.db.url}/ireport
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  istorage-service.yml: |-
+    incloud:
+      istorage:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  iswift-service.yml: |-
+    incloud:
+      iswift:
+        db:
+          url: ${incloud.common.db.url}/iresource
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  iworkflow-service.yml: |-
+    incloud:
+      iworkflow:
+        db:
+          url: ${incloud.common.db.url}/iworkflow
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  itrouble-service.yml: |-
+    incloud:
+      itrouble:
+        db:
+          url: ${incloud.common.db.url}/itrouble
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}
+  iresource-common-service.yml: |-
+    incloud:
+      iresource-common:
+        db:
+          url: ${incloud.common.db.url}/iresource_common
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}

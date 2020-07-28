@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imirror-hypervisor
+  labels:
+    name: imirror-hypervisor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: imirror-hypervisor
+  template:
+    metadata:
+      labels:
+        name: imirror-hypervisor
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: imirror
+        image: 100.2.30.190/incloudos-docker/imirror-hypervisor-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32421
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  imirror-hypervisor
+spec:
+  selector:
+    name: imirror-hypervisor
+  type: NodePort
+  ports:
+  - name:  imirror-hypervisor-port
+    port:  32421
+    targetPort:  32421
+    nodePort: 32421

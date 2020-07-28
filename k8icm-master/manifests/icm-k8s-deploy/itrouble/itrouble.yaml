@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itrouble
+  labels:
+    name: itrouble
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: itrouble
+  template:
+    metadata:
+      labels:
+        name: itrouble
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: itrouble
+        image: 100.2.30.190/incloudos-docker/itrouble-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32609
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  itrouble
+spec:
+  selector:
+    name: itrouble
+  type: NodePort
+  ports:
+  - name:  itrouble-port
+    port:  32609
+    targetPort:  32609
+    nodePort: 32609

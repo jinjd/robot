@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ireport
+  labels:
+    name: ireport
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ireport
+  template:
+    metadata:
+      labels:
+        name: ireport
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: ireport
+        image: 100.2.30.190/incloudos-docker/ireport-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32603
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  ireport
+spec:
+  selector:
+    name: ireport
+  type: NodePort
+  ports:
+  - name:  ireport-port
+    port:  32603
+    targetPort:  32603
+    nodePort: 32603

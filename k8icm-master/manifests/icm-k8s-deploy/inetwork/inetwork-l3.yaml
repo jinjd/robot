@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inetwork-l3
+  labels:
+    name: inetwork-l3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: inetwork-l3
+  template:
+    metadata:
+      labels:
+        name: inetwork-l3
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: inetwork-l3
+        image: 100.2.30.190/incloudos-docker/inetwork-l3-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32307
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  inetwork-l3
+spec:
+  selector:
+    name: inetwork-l3
+  type: NodePort
+  ports:
+  - name:  inetwork-l3-port
+    port:  32307
+    targetPort:  32307
+    nodePort: 32307

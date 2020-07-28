@@ -1,0 +1,4 @@
+- import_tasks: mips.yml
+  when: ARCH  == "mips64el"
+- import_tasks: docker.yml
+  when: ARCH  == "amd64" or ARCH  == "arm64"

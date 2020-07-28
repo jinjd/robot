@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "istorage-openstack.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "istorage-openstack.name" . }}
+    helm.sh/chart: {{ include "istorage-openstack.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "istorage-openstack.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "istorage-openstack.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.image }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: TZ
+            value: 'Asia/Shanghai'
+          - name: incloudConfigURL
+            value: '{{ .Values.incloudConfigURL.url }}:{{ .Values.incloudConfigURL.port }}'
+          {{- if .Values.debug.enable }}
+          - name: JAVA_DEBUG
+            value: '1'
+          {{- end }}
+          - name: incloudDbUpdateEnabled
+            value: 'false'
+          - name: incloudConfigLabel
+            value: '{{ .Values.incloudConfigLabel.regionName }}'
+
+          ports:
+            - name: svc-port
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            {{- if .Values.debug.enable }}
+            - name: debug-port
+              containerPort: {{ .Values.debug.port }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.service.port }}
+              initialDelaySeconds: 30
+              periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.service.port }}
+              initialDelaySeconds: 30
+              periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

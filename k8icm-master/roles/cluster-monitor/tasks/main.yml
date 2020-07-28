@@ -1,0 +1,18 @@
+
+- name: 获取已下载离线镜像信息
+  command: "ls {{ base_dir }}/down"
+  register: download_info
+  connection: local
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true
+  ignore_errors: true
+
+- name: 获取所有已经创建的POD信息
+  command: "{{ bin_dir }}/kubectl get pod --all-namespaces"
+  register: pod_info
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true
+
+  
+- import_tasks: efk.yml
+- import_tasks: prometheus.yml

@@ -1,0 +1,12 @@
+# 镜像
+REAL_REG_MIRROR_1: "http://{{ REG_MIRROR_HTTP }}"
+
+# docker日志相关
+
+LOG_DRIVER: "json-file"
+LOG_LEVEL: "warn"
+LOG_MAX_SIZE: "10m"
+LOG_MAX_FILE: 3
+
+# docker容器存储目录
+STORAGE_DIR: "/var/lib/docker"

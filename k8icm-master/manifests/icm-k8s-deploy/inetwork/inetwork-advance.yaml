@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inetwork-advance
+  labels:
+    name: inetwork-advance
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: inetwork-advance
+  template:
+    metadata:
+      labels:
+        name: inetwork-advance
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: inetwork-advance
+        image: 100.2.30.190/incloudos-docker/inetwork-advance-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32308
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  inetwork-advance
+spec:
+  selector:
+    name: inetwork-advance
+  type: NodePort
+  ports:
+  - name:  inetwork-advance-port
+    port:  32308
+    targetPort:  32308
+    nodePort: 32308

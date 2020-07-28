@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iauth
+  labels:
+    name: iauth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: iauth
+
+  template:
+    metadata:
+      labels:
+        name: iauth
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+          # 替换配置文件变量
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: iauth
+        image: 100.2.30.190/incloudos-docker/iauth-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32100
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  iauth
+spec:
+  selector:
+    name: iauth
+  type: NodePort
+  ports:
+  - name:  iauth-port
+    port:  32100
+    targetPort:  32100
+    nodePort: 32100

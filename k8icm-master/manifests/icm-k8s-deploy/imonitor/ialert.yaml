@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ialert
+  labels:
+    name: ialert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ialert
+  template:
+    metadata:
+      labels:
+        name: ialert
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: ialert
+        image: 100.2.30.190/incloudos-docker/ialert-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32503
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 500m
+            memory: 500Mi
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  ialert
+spec:
+  selector:
+    name: ialert
+  type: NodePort
+  ports:
+  - name:  ialert-port
+    port:  32503
+    targetPort:  32503
+    nodePort: 32503

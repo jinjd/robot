@@ -1,0 +1,46 @@
+# region One deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: incloudmanager-api-gateway-regionone
+  labels:
+    name: incloudmanager-api-gateway-regionone
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: incloudmanager-api-gateway-regionone
+  template:
+    metadata:
+      labels:
+        name: incloudmanager-api-gateway-regionone
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        - name: incloudConfigLabel
+          value: 'regionOne'
+        name: incloudmanager-api-gateway
+        image: 100.2.30.190/incloudos-docker/incloudmanager-api-gateway:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 7979
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  incloudmanager-api-gateway-regionone
+spec:
+  selector:
+    name: incloudmanager-api-gateway-regionone
+  type: NodePort
+  ports:
+  - name:  incloudmanager-api-gateway-regionone-port
+    port:  7980
+    targetPort:  7979
+    # nodePort: 30080

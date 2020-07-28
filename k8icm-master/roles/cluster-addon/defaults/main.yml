@@ -1,0 +1,42 @@
+# dns 自动安装，可选"coredns"和“kubedns”
+dns_install: "yes"
+dns_backend: "coredns"
+kubedns_offline: "kubedns_1.14.13.tar"
+coredns_offline: "coredns_1.2.6.tar"
+dns_offline: "{%- if dns_backend == 'coredns' -%} \
+                {{ coredns_offline }} \
+              {%- else -%} \
+                {{ kubedns_offline }} \
+              {%- endif -%}"
+coredns_image: "{{ REG_MIRROR }}dockerio/coredns/coredns-{{ ARCH }}:1.2.6"
+kubedns_dnsmasq_image: "{{ REG_MIRROR }}gcrio/google-containers/k8s-dns-dnsmasq-nanny-{{ ARCH }}:1.14.13"
+kubedns_sidecar_image: "{{ REG_MIRROR }}gcrio/google-containers/k8s-dns-sidecar-{{ ARCH }}:1.14.13"
+kubedns_dns_image: "{{ REG_MIRROR }}gcrio/google-containers/k8s-dns-kube-dns-{{ ARCH }}:1.14.13"
+# metric server 自动安装
+metricsserver_install: "yes"
+metricsserver_offline: "metrics-server_v0.3.1.tar"
+metricsserver_image: "{{ REG_MIRROR }}gcrio/google-containers/metrics-server-{{ ARCH }}:v0.3.1"
+
+# dashboard 自动安装
+dashboard_install: "no"
+dashboard_offline: "dashboard_v1.10.0.tar"
+dashboard_image: "{{ REG_MIRROR }}gcrio/google-containers/kubernetes-dashboard-{{ ARCH }}:v1.10.0"
+
+# ingress 自动安装，可选 "traefik" 和 "nginx-ingress"
+ingress_install: "yes"
+ingress_backend: "nginx-ingress"
+traefik_offline: "traefik_v1.7.4.tar"
+nginx_ingress_offline: "nginx_ingress_0.21.0.tar"
+traefik_image: "{{ REG_MIRROR }}dockerio/traefik:v1.7.4"
+nginx_ingress_image: "{{ REG_MIRROR }}quayio/kubernetes-ingress-controller/nginx-ingress-controller-{{ ARCH }}:0.21.0"
+# heapster 自动安装
+heapster_install: "no"
+heapster_offline: "heapster_v1.5.4.tar"
+heapster_image: ""
+# metallb 自动安装
+metallb_install: "no"
+# 模式选择: 二层 "layer2" 或者三层 "bgp"
+metallb_protocol: "layer2"
+metallb_offline: "metallb_v0.7.3.tar"
+metallb_vip_pool: "192.168.1.240/29"
+metallb_image: "{{ REG_MIRROR }}dockerio/metallb/controller-{{ ARCH }}:v0.7.3"

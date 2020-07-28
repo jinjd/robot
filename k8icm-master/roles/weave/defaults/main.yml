@@ -1,0 +1,6 @@
+#
+# weave_npc_image: '10.7.12.120/longxin/weave-npc-loongxin:v2.5.1'
+# weave_kube_image: '10.7.12.120/longxin/weave-kube-loongxin:v2.5.1'
+
+weave_npc_image: '{{ REG_MIRROR }}dockerio/weaveworks/weave-npc:v2.5.1'
+weave_kube_image: '{{ REG_MIRROR }}dockerio/weaveworks/weave-kube:v2.5.1'

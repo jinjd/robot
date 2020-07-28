@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icinder-hypervisor
+  labels:
+    name: icinder-hypervisor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icinder-hypervisor
+  template:
+    metadata:
+      labels:
+        name: icinder-hypervisor
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icinder
+        image: 100.2.30.190/incloudos-docker/icinder-hypervisor-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32412
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icinder-hypervisor
+spec:
+  selector:
+    name: icinder-hypervisor
+  type: NodePort
+  ports:
+  - name:  icinder-hypervisor-port
+    port:  32412
+    targetPort:  32412
+    nodePort: 32412

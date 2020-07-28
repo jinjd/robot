@@ -1,0 +1,29 @@
+
+# efk 自动安装
+efk_install: "no"
+efk_offline: "efk_v5.6.4.tar"
+es_dynamic_pv_size: "60Gi"
+
+elasticsearch_image: "{{ REG_MIRROR }}gcrio/google-containers/elasticsearch-{{ ARCH }}:v5.6.4"
+alpine_image: "{{ REG_MIRROR }}dockerio/alpine-{{ ARCH }}:3.6"
+fluentd_image: "{{ REG_MIRROR }}gcrio/google-containers/fluentd-elasticsearch-{{ ARCH }}:v2.0.2"
+kibana_image: "{{ REG_MIRROR }}dockerio/kibana/kibana-{{ ARCH }}:5.6.4"
+
+# prometheus 自动安装
+prometheus_install: "yes"
+prometheus_offline: "prometheus-operator-0.28.0.tar"
+prometheus_data_size: "60Gi"
+
+configmap_reload_image: "{{ REG_MIRROR }}quayio/coreos/configmap-reload-{{ ARCH }}:v0.0.1"
+prometheus_config_reloader_image: "{{ REG_MIRROR }}quayio/coreos/prometheus-config-reloader-{{ ARCH }}:v0.27.0"
+prometheus_operator_image: "{{ REG_MIRROR }}quayio/coreos/prometheus-operator-{{ ARCH }}:v0.27.0"
+alertmanager_image: "{{ REG_MIRROR }}quayio/prometheus/alertmanager-{{ ARCH }}"
+alertmanager_version: "v0.16.0"
+grafana_image: "{{ REG_MIRROR }}dockerio/grafana/grafana-{{ ARCH }}:5.2.4"
+kube_rbac_proxy_image: "{{ REG_MIRROR }}quayio/coreos/kube-rbac-proxy-{{ ARCH }}:v0.4.1"
+kube_state_metrics_image: "{{ REG_MIRROR }}quayio/coreos/kube-state-metrics-{{ ARCH }}:v1.5.0"
+addon_resizer_image: "{{ REG_MIRROR }}quayio/coreos/addon-resizer-{{ ARCH }}:1.0"
+node_exporter_image: "{{ REG_MIRROR }}quayio/prometheus/node-exporter-{{ ARCH }}:v0.17.0"
+k8s_prometheus_adapter_image: "{{ REG_MIRROR }}quayio/coreos/k8s-prometheus-adapter-{{ ARCH }}:v0.4.1"
+prometheus_image: "{{ REG_MIRROR }}quayio/prometheus/prometheus-{{ ARCH }}"
+prometheus_version: "2.5.0"

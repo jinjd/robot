@@ -1,0 +1,8 @@
+
+- hosts:
+  - kube-master
+  - kube-node
+  - new_master
+  - new-node
+  roles:
+  - cluster-storage

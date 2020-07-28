@@ -1,0 +1,50 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: test-nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: test-nginx
+    spec:
+      containers:
+      - name: test-nginx
+        image: harbor.inspur.com/dockerio/nginx
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-nginx
+  labels:
+    app: test-nginx
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    name: http
+  selector:
+    run: test-nginx
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: test-nginx
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # 禁止跳转https
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+spec:
+  rules:
+  - host: test.nginx.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: test-nginx
+          servicePort: 80

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istorage-openstack
+  labels:
+    name: istorage-openstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: istorage-openstack
+
+  template:
+    metadata:
+      labels:
+        name: istorage-openstack
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: istorage-openstack
+        image: 100.2.30.190/incloudos-docker/istorage-openstack-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32402
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  istorage-openstack
+spec:
+  selector:
+    name: istorage-openstack
+  type: NodePort
+  ports:
+  - name:  istorage-openstack-port
+    port:  32402
+    targetPort:  32402
+    nodePort: 32402

@@ -1,0 +1,12 @@
+log:
+  enabled: true
+  logdir: log
+  level: 4
+host:
+  link: fc
+storage:
+- name: storage-01
+  host: {{ storage.g2.host }}:{{ storage.g2.port }}
+  username: {{ storage.g2.username }}
+  password:
+  shadow: {{ shadow_r['stdout'] }}

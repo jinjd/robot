@@ -1,0 +1,54 @@
+# Default values for icm-ui.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 3
+
+image:
+  repository: harbor.inspur.com
+  image: incloudos-docker/icm-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceHttp:
+  type: NodePort
+  port: 30480
+  nodePort: 30480
+serviceHttps:
+  type: NodePort
+  port: 30443
+  nodePort: 30443
+serviceWs:
+  type: NodePort
+  nodePort: 32266
+  port: 32266
+
+
+resources: {}
+  # limits:
+  #  cpu: 2
+  #  memory: 4Gi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+db:
+  service: galera
+  port: 3306
+  username: root
+  password: "123456a?"
+  database: ibase
+
+redis:
+  service: redis-redis-ha
+  port: 6379
+  password: 
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

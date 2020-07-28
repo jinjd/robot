@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibase
+  labels:
+    name: ibase
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ibase
+
+  template:
+    metadata:
+      labels:
+        name: ibase
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: ibase
+        image: 100.2.30.190/incloudos-docker/ibase-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32101
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  ibase
+spec:
+  selector:
+    name: ibase
+  type: NodePort
+  ports:
+  - name:  ibase-port
+    port:  32101
+    targetPort:  32101
+    nodePort: 32101

@@ -1,0 +1,30 @@
+kind: ConfigMap
+metadata:
+  name: icm-configmap
+apiVersion: v1
+data:
+  application.yml: |
+    incloud:
+      common:
+        flyway:
+          threepower: false
+    incloud-service:
+      endpoints:
+        iauth:
+          enabled: true
+          path: /iauth/**
+          url: http://iauth:32100
+          stripPrefix: true
+          filterIgnoreUrl: GET:/v1/auth/tokens;POST:/v1/auth/tokens;GET:/v1/auth/types
+        ibase:
+          enabled: true
+          path: /ibase/**
+          url: http://ibase:32101
+          stripPrefix: true
+          filterIgnoreUrl: GET:/v1/sysconfig/params;GET:/v1/serialnumbers/product
+        itask:
+          enabled: true
+          path: /itask/**
+          url: http://itask:32105
+          stripPrefix: true
+          filterIgnoreUrl: GET:/gs-guide-websocket;POST:/gs-guide-websocket

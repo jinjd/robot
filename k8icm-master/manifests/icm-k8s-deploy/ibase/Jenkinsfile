@@ -1,0 +1,82 @@
+pipeline {
+    agent {label 'maven-jenkins'}
+    triggers { pollSCM('30 23 * * 1-6') }
+    stages {
+        stage('Preparation') {
+            steps{
+                echo "1.Prepare Stage"
+                checkout scm
+                dir('../incloudmanager-parent') {
+                    git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/incloudmanager-parent.git'
+                }
+                dir('../incloudmanager-utils') {
+                    git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/incloudmanager-utils.git'
+                }
+                dir('../k8icm') {
+                    git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/k8icm.git'
+                }
+                script {
+                    git_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    build_tag = "${env.BRANCH_NAME}-${git_tag}"
+
+                    if (env.BRANCH_NAME == 'master') {
+                        namespace = "icm"
+                    } else {
+                        namespace= "icm-${env.BRANCH_NAME}"
+                    }
+                    echo "namespace: ${namespace}"
+                    echo "branch: ${env.BRANCH_NAME}"
+                    echo "build tag: ${build_tag}"
+                }
+            }
+        }
+
+        stage('login oc & docker regristry') {
+            steps{
+                echo "2.login oc & docker regristry"
+                withCredentials([usernamePassword(credentialsId: 'openshift', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+                sh "oc login -u ${dockerHubUser} -p ${dockerHubPassword}"
+                sh 'docker login -u `oc whoami` -p `oc whoami -t`  docker-registry.default.svc:5000'
+                }
+            }
+
+        }
+
+        stage('Test') {
+            steps{
+                echo "3.Test Stage"
+                echo "skip"
+            }
+        }
+
+        stage('Build') {
+            steps{
+                echo "4.Mavne Build Stage"
+                sh "mvn clean install -DskipTests"
+                sh "mvn deploy -DskipTests"
+                sh "mvn docker:build -DpushImageTag -DdockerImageTags=latest,${env.BRANCH_NAME}-latest,${build_tag} -DskipTests"
+            }
+
+        }
+
+        stage('deploy') {
+            steps{
+                echo "5.Deploy Projects Stage"
+                // 创建资源
+                sh "sed -i 's/{{ IMAGE_TAG }}/${build_tag}/' ../k8icm/manifests/icm-k8s-deploy/ibase/ibase.yaml"
+                sh "sed -i 's/{{ IMAGE_TAG }}/${build_tag}/' ../k8icm/manifests/icm-k8s-deploy/ibase/iauth.yaml"
+
+                sh "oc apply -f ../k8icm/manifests/icm-k8s-deploy/ibase/ibase.yaml -n=${namespace}"
+                sh "oc apply -f ../k8icm/manifests/icm-k8s-deploy/ibase/iauth.yaml -n=${namespace}"
+            }
+
+        }
+
+    stage('Results') {
+        steps{
+            echo "6.Build results"
+        }
+    }
+
+    }
+}

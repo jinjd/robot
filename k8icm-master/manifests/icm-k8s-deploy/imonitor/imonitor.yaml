@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imonitor
+  labels:
+    name: imonitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: imonitor
+  template:
+    metadata:
+      labels:
+        name: imonitor
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: imonitor
+        image: 100.2.30.190/incloudos-docker/imonitor-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32501
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  imonitor
+spec:
+  selector:
+    name: imonitor
+  type: NodePort
+  ports:
+  - name:  imonitor-port
+    port:  32501
+    targetPort:  32501
+    nodePort: 32501

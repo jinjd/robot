@@ -1,0 +1,14 @@
+- block:
+    - name: 准备icm 文件夹
+      file: path={{ item }} state=directory
+      with_items:
+      - /opt/kube/icm
+
+    - name: 准备 ns 的部署文件
+      template: src={{ item }}.yaml.j2 dest=/opt/kube/icm/{{ item }}.yaml
+      with_items:
+      - ns
+    - name: 创建ns
+      shell: "{{ bin_dir }}/kubectl apply -f /opt/kube/icm/ns.yaml"
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true

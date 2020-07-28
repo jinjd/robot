@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iworkflow
+  labels:
+    name: iworkflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: iworkflow
+  template:
+    metadata:
+      labels:
+        name: iworkflow
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        name: iworkflow
+        image: 100.2.30.190/incloudos-docker/iworkflow-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32602
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  iworkflow
+spec:
+  selector:
+    name: iworkflow
+  type: NodePort
+  ports:
+  - name:  iworkflow-port
+    port:  32602
+    targetPort:  32602
+    nodePort: 32602

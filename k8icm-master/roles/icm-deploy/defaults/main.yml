@@ -1,0 +1,93 @@
+#######################################################
+# env:icm, icks
+env: icm
+# icm charts manifests dir
+icmd: "{{ playbook_dir }}/manifests/icm-charts"
+
+# icm middleware charts manifests dir
+mwd: "{{ playbook_dir }}/manifests/"
+
+#######################################################
+# 变量 image.repository , image.tag
+image:
+  repository: "harbor.inspur.com"
+  # repository: "{{ REAL_REG_MIRROR }}"
+  tag: latest
+  pluginIcmTag: latest
+# 镜像拉去策略，可选项: Always
+  pullPolicy: IfNotPresent
+
+# service type,可选 NodePort
+service:
+  type: ClusterIP
+
+# replica
+replicaCount: 1
+
+regionName: "regionOne"
+
+# 禁用数据初始化，如果不想初始化数据部署，设置 manifests.job_db_init=false
+manifests:
+  job_db_init: true
+
+# config服务链接地址，多region修改此选项 incloudConfigURL.incloudmanager_config 为cmp集群的VIP地址
+incloudConfigURL: 
+  url: incloudmanager-config
+  port: 32001
+
+######################################################
+# namespaces
+cmp_ns: "{{ env }}"
+
+# region_ns: {{ regionName }}
+# fqdn
+cmpfq_dn: "{{cmp_ns}}.svc.{{CLUSTER_DNS_DOMAIN}}"
+regionone_fqdn: "{{regionone_ns}}.svc.{{CLUSTER_DNS_DOMAIN}}"
+
+#######################################################
+# middleware参数配置
+# 如果使用的外部数据库，请将service 和 nodeport（port）设置为对应的地址端口
+db:
+  image: "registryv2.inspur.com:5000/dockerio/k8s-mariadb-cluster-amd64:10.3.7"
+  pv: "true"
+  service: galera
+  port: 3306
+  nodeport: 31586
+  username: root
+  password: "123456a?"
+  icm_username: "incloudmanager"
+  icm_password: "incloudmanager123456a?"
+
+rabbitmq:
+  pv: "true"
+  pvsize: "8Gi"
+  service: rabbitmq-rabbitmq-ha
+  port: 5672
+  username: "incloudmanager"
+  password: "incloudmanager123456a?"
+
+zk:
+  pv: "true"
+  pvsize: 8Gi
+  service: zookeeper
+  port: 2181
+
+redis:
+  ha: "false"
+  pv: "true"  
+  pvsize: "10Gi"
+  service: redis
+  port: 6379
+  password: ""
+
+  
+influxdb:
+  pv: "true"
+  pvsize: "200Gi"
+  service: influxdb-influxdb
+  port: 8086
+  username: "admin"
+  password: "123456a?"
+
+
+#######################################################

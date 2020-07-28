@@ -1,0 +1,60 @@
+node('maven-jenkins') {
+   def mvnHome
+    stage('Preparation') {
+        echo "1.Prepare Stage"
+        git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/icm.git'
+        dir('../icm-k8s-deploy') {
+            git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/icm-k8s-deploy.git'
+        }
+        script {
+          git_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+          git_branch = sh(returnStdout: true, script: 'git symbolic-ref --short -q HEAD').trim()
+          build_tag = "${git_branch}-${git_tag}"
+        }
+        sh "echo test 构建镜像tag: ${build_tag}"
+    }
+
+    stage('login oc & docker regristry') {
+        echo "2.login oc & docker regristry"
+        withCredentials([usernamePassword(credentialsId: 'openshift', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+        sh "oc login -u ${dockerHubUser} -p ${dockerHubPassword}"
+        }
+        withCredentials([usernamePassword(credentialsId: 'harobr', passwordVariable: 'HarborPassword', usernameVariable: 'HarborUser')]) {
+        sh "docker login -u ${HarborUser} -p ${HarborPassword}  100.2.30.190"
+        }
+    }
+
+    stage('Test') {
+        echo "3.Test Stage"
+
+    }
+
+    stage('Build') {
+        echo "4.Build images Stage"
+        dir('../icm-k8s-deploy/icm-ui') {
+          sh "git clone http://chenyingnan:chyn_20080@100.2.50.206/ICM/icm.git"
+          sh "docker build -t 100.2.30.190/incloudos-docker/icm-service:${build_tag} ."
+        }
+
+    }
+
+    stage('Push') {
+        echo "5.Push Docker Image Stage"
+        sh "docker push 100.2.30.190/incloudos-docker/icm-service:${build_tag}"
+    }
+
+    stage('deploy') {
+        echo "6.Deploy Projects Stage"
+        // 创建所需的configmap
+        // sh "oc apply -f ../icm-k8s-deploy/icm-ui/templates/icm-ui-configmap.yaml -n=icm --record"
+
+        // 创建资源
+        sh "sed -i 's/{{ IMAGE_TAG }}/${build_tag}/' ../icm-k8s-deploy/icm-ui/templates/icm-ui.yaml"
+        sh "oc apply -f ../icm-k8s-deploy/icm-ui/templates/icm-ui.yaml -n=icm --record"
+    }
+
+   stage('Results') {
+        echo "7.Build results"
+   }
+
+}

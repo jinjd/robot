@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ilifecycle
+  labels:
+    name: ilifecycle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ilifecycle
+  template:
+    metadata:
+      labels:
+        name: ilifecycle
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: ilifecycle
+        image: 100.2.30.190/incloudos-docker/ilifecycle-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32406
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  ilifecycle
+spec:
+  selector:
+    name: ilifecycle
+  type: NodePort
+  ports:
+  - name:  ilifecycle-port
+    port:  32406
+    targetPort:  32406
+    nodePort: 32406

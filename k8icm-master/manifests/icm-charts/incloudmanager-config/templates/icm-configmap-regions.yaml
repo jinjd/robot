@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: icm-configmap-regions
+data:
+  application.yml: |
+    incloud:
+      common:
+        db:
+          url: {{ .Values.db.service }}:{{ .Values.db.port }}
+          username: {{ .Values.db.username }}
+          password: {{ .Values.db.password }}
+        zk:
+          url: {{ .Values.zk.service }}:{{ .Values.zk.port }}
+        rabbitmq:
+          host: {{ .Values.rabbitmq.service }}
+          port: {{ .Values.rabbitmq.port }}
+          username: {{ .Values.rabbitmq.username }}
+          password: {{ .Values.rabbitmq.password }}
+        redis:
+          database: 0
+          host: {{ .Values.redis.service }}
+          port: {{ .Values.redis.port }}
+          password: {{ .Values.redis.password }}
+          timeout: 6000
+    incloud-region:
+      regions:
+        regionOne:
+          url: http://incloudmanager-api-gateway-regionOne:7980
+  iauth-service.yml: |-
+    incloud:
+      iauth:
+        db:
+          url: ${incloud.common.db.url}/ibase
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+  ibase-service.yml: |
+    incloud:
+      ibase:
+        db:
+          url: ${incloud.common.db.url}/ibase
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        rabbitmq:
+          host: ${incloud.common.rabbitmq.host}
+          port: ${incloud.common.rabbitmq.port}
+          username: ${incloud.common.rabbitmq.username}
+          password: ${incloud.common.rabbitmq.password}
+  itask-service.yml: |
+    incloud:
+      itask:
+        db:
+          url: ${incloud.common.db.url}/ibase
+          username: ${incloud.common.db.username}
+          password: ${incloud.common.db.password}
+        zk:
+          url: ${incloud.common.zk.url}
+        redis:
+          database: ${incloud.common.redis.database}
+          host: ${incloud.common.redis.host}
+          port: ${incloud.common.redis.port}
+          password: ${incloud.common.redis.password}
+          timeout: ${incloud.common.redis.timeout}

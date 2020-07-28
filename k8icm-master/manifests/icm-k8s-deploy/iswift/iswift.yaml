@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iswift
+  labels:
+    name: iswift
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: iswift
+  template:
+    metadata:
+      labels:
+        name: iswift
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: iswift
+        image: 100.2.30.190/incloudos-docker/iswift-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32405
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  iswift
+spec:
+  selector:
+    name: iswift
+  type: NodePort
+  ports:
+  - name:  iswift-port
+    port:  32405
+    targetPort:  32405
+    nodePort: 32405

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icompute-openstack
+  labels:
+    name: icompute-openstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icompute-openstack
+
+  template:
+    metadata:
+      labels:
+        name: icompute-openstack
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icompute-openstack
+        image: 100.2.30.190/incloudos-docker/icompute-openstack-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32202
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icompute-openstack
+spec:
+  selector:
+    name: icompute-openstack
+  type: NodePort
+  ports:
+  - name:  icompute-openstack-port
+    port:  32202
+    targetPort:  32202
+    nodePort: 32202

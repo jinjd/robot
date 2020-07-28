@@ -1,0 +1,44 @@
+- name: 检查是否已下载离线 nfs-client-provisioner 镜像
+  command: "ls {{ base_dir }}/down"
+  register: download_info
+  connection: local
+  run_once: true
+
+- name: 尝试推送离线 docker 镜像
+  copy: src={{ base_dir }}/down/{{ item }} dest=/opt/kube/images/{{ item }}
+  when: 'item in download_info.stdout'
+  with_items:
+  - "pause_3.1.tar"
+  - "{{ nfs_external_storage_offline }}"
+  ignore_errors: true
+
+- name: 获取 nfs-client-provisioner 离线镜像推送情况
+  command: "ls /opt/kube/images"
+  register: image_info
+
+- name: 导入 nfs-client-provisioner 的离线镜像
+  shell: "{{ bin_dir }}/docker load -i /opt/kube/images/{{ item }}"
+  when: 'item in image_info.stdout'
+  with_items:
+  - "{{ nfs_external_storage_offline }}"
+  ignore_errors: true
+
+# nfs
+- name: 部署 nfs server
+  import_tasks: nfs-server.yml
+  when: 'storage.nfs.server_enabled == "yes"'
+  delegate_to: "{{ storage.nfs.server }}"
+  run_once: true
+ 
+- import_tasks: nfs-client.yml
+  when: 'storage.nfs.enabled == "yes"'
+
+#
+- import_tasks: alicloud-nas.yml
+  when: 'storage.aliyun_nas.enabled == "yes"'
+  delegate_to: "{{ groups.deploy[0] }}"
+  run_once: true
+
+# g2
+- import_tasks: g2.yml
+  when: 'storage.g2.enabled == "yes"'

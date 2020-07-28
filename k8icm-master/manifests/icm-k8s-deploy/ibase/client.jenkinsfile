@@ -1,0 +1,40 @@
+node('maven-jenkins') {
+   def mvnHome
+    stage('Preparation') {
+        echo "1.Prepare Stage"
+        checkout scm
+
+        dir('../incloudmanager-parent') {
+            git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/incloudmanager-parent.git'
+        }
+        dir('../incloudmanager-utils') {
+            git credentialsId: '80a7aa74-ae6c-48f7-9d09-8025856a8025', url: 'http://100.2.50.206/ICM/incloudmanager-utils.git'
+        }
+
+    }
+
+    stage('Test') {
+        echo "2.Test Stage"
+
+    }
+
+    stage('Build') {
+        echo "3.Mavne Build Stage"
+        dir('iauth-client') {
+            sh "mvn clean install -DskipTests"
+            sh "mvn deploy -DskipTests"
+            //sh 'mvn docker:build -DpushImage -DskipTests'
+            }
+        dir('ibase-client') {
+            sh "mvn clean install -DskipTests"
+            sh "mvn deploy -DskipTests"
+            //sh 'mvn docker:build -DpushImage -DskipTests'
+            }
+    }
+
+
+   stage('Results') {
+        echo "4.Build results"
+   }
+
+}

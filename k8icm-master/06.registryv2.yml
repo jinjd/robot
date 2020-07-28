@@ -1,0 +1,5 @@
+# 容器端口定为5000
+
+- hosts: all
+  roles:
+  - registryv2

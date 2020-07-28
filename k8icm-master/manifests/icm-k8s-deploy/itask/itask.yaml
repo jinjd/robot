@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itask
+  labels:
+    name: itask
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: itask
+  template:
+    metadata:
+      labels:
+        name: itask
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: itask
+        image: 100.2.30.190/incloudos-docker/itask-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32105
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  itask
+spec:
+  selector:
+    name: itask
+  type: NodePort
+  ports:
+  - name:  itask-port
+    port:  32105
+    targetPort:  32105
+    nodePort: 32105

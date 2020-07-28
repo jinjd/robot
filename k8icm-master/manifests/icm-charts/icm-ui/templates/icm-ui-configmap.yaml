@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: icm-ui-configmap
+
+data:
+  serviceAddr.json: |
+    {
+      "serverIp":"incloudmanager-api-gateway-regions:7979",
+      "mysql":{
+        "host":"{{ .Values.db.service }}",
+        "port":{{ .Values.db.port }},
+        "user":"{{ .Values.db.username }}",
+        "password":"{{ .Values.db.password }}",
+        "database":"{{ .Values.db.database }}"
+        },
+      "redis":{
+        "host":"{{ .Values.redis.service }}",
+        "port":{{ .Values.redis.port }},
+        "user":"{{ .Values.redis.username }}",
+        "password": "{{ .Values.redis.password }}"
+      },
+
+      "bindip":"0.0.0.0"
+        }

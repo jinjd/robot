@@ -1,0 +1,61 @@
+pipeline {
+    agent {label 'maven-jenkins'}
+    options {
+        buildDiscarder(logRotator(daysToKeepStr:'7', numToKeepStr: '30', artifactNumToKeepStr: '7'))
+    }
+    triggers {
+        gitlab (
+            triggerOnPush: true,
+            triggerOnMergeRequest: true,
+            branchFilterType: 'All',
+            addVoteOnMergeRequest: true)
+    }
+    stages {
+        stage('Preparation') {
+            steps{
+                echo "1.Prepare Stage"
+                checkout scm
+                script {
+                    echo "branch: ${env.BRANCH_NAME}"
+                    git_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                    build_tag = "${env.BRANCH_NAME}-${git_tag}"
+                    echo "build tag: ${build_tag}"
+                }
+            }
+        }
+    
+            stage('Retag images') {
+                steps{
+                echo "2. latest tag -> `date` tag"
+                dir('tools/cicd') {
+                    sh "chmod +x *.sh"
+                    sh "./retag_images.sh ${build_tag} ${env.BRANCH_NAME}"
+                }
+                }
+            }
+
+            stage('归档') {
+                steps{
+                echo "3. 归档并压缩"
+                    sh "tar zcvf /tmp/icm_m_files/icm-m_${build_tag}.tar.gz ."
+                    sh "md5sum /tmp/icm_m_files/icm-m_${build_tag}.tar.gz > /tmp/icm_m_files/icm-m_${build_tag}.md5"
+                }
+            }
+
+            stage('Test') {
+                steps{
+
+                echo "3. 推送至测试环境"
+                // sh "sleep 300"
+            }
+            }
+            stage('Build results') {
+                steps{
+
+                echo "4. Build results"
+                // sh "sleep 300"
+            }
+            }
+    }
+        
+}

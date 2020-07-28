@@ -1,0 +1,51 @@
+---
+- name: Install nfs-utils
+  package: name=nfs-utils state=present
+  register: result
+  until: result is succeeded
+
+- name: Configure NFS
+  lineinfile:
+    dest: /etc/sysconfig/nfs
+    regexp: '^RPCNFSDARGS=.*$'
+    line: 'RPCNFSDARGS="-N 2 -N 3"'
+  register: nfs_config
+
+- name: Restart nfs-config
+  systemd: name=nfs-config state=restarted
+  when: nfs_config is changed
+
+# 
+- name: "Ensure {{ storage.nfs.server_path }} NFS export directory exists"
+  file:
+    path: "{{ storage.nfs.server_path }}"
+    state: directory
+    mode: 0777
+    owner: nfsnobody
+    group: nfsnobody
+
+- name: "Create {{ storage.nfs.server_path }} NFS export"
+  lineinfile:
+    path: "/etc/exports.d/{{ storage.nfs.export_config }}.exports"
+    create: true
+    state: present
+    line: "{{ storage.nfs.server_path }} {{ storage.nfs.options }}"
+  register: created_export
+
+- name: Re-export NFS filesystems
+  command: exportfs -ar
+  when:
+    - created_export is changed
+
+
+# 
+- name: Ensure exports directory exists
+  file:
+    path: "{{ storage.nfs.server_path }}"
+    state: directory
+
+- name: Enable and start NFS services
+  systemd:
+    name: nfs-server
+    state: started
+    enabled: yes

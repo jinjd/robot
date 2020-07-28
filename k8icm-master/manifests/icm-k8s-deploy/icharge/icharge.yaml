@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: icharge
+  labels:
+    name: icharge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: icharge
+  template:
+    metadata:
+      labels:
+        name: icharge
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: incloudConfigURL
+          value: 'incloudmanager-config:32001'
+        - name: incloudDbUpdateEnabled
+          value: 'false'
+        name: icharge
+        image: 100.2.30.190/incloudos-docker/icharge-service:{{ IMAGE_TAG }}
+        ports:
+          - containerPort: 32601
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  icharge
+spec:
+  selector:
+    name: icharge
+  type: NodePort
+  ports:
+  - name:  icharge-port
+    port:  32601
+    targetPort:  32601
+    nodePort: 32601
